@@ -133,16 +133,18 @@ if ! cd "$sourcedir" ; then
 fi
 
 patchcount=0
-for p in "$patchesdir/bash${nodotversion}-"???; do
-    if patch -p0 -i "$p" --quiet; then
-        patchcount=$((patchcount +1))
-    else
-        echo "## error while patching $p"
-        exit 1
-    fi
-done
+if [ -n "$patcheslist" ]; then
+    for p in "$patchesdir/bash${nodotversion}-"???; do
+        if patch -p0 -i "$p" --quiet; then
+            patchcount=$((patchcount +1))
+        else
+            echo "## error while patching $p"
+            exit 1
+        fi
+    done
 
-echo "## applied $patchcount patches"
+    echo "## applied $patchcount patches"
+fi
 
 if [ $patchcount -gt 0 ]; then
     patchedversion="$version.$patchcount"
@@ -154,6 +156,8 @@ fi
 
 echo "## configuring $sourcedir"
 
+# For a universal2 build, prepend with:
+# CFLAGS="-arch arm64 -arch x86_64"
 "$sourcedir/configure" --prefix="$payloaddir" --quiet
 
 
